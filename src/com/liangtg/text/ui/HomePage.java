@@ -3,15 +3,18 @@ package com.liangtg.text.ui;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class HomePage extends JPanel {
+import com.liangtg.text.Nav;
+import com.liangtg.text.util.AppDir;
+
+public class HomePage extends BasePanel {
 	public HomePage() {
-		super(new GridLayout(6, 1, 10, 10));
-		setOpaque(false);
+		super(new GridLayout(0, 1, 10, 10));
 		add(new LButton("打开文件", new OpenLocalAction()));
 		add(new LButton("打开链接", new OpenRemoteAction()));
 		add(new LButton("历史", new OpenHistoryAction()));
@@ -27,7 +30,12 @@ public class HomePage extends JPanel {
 			JFileChooser chooser = new JFileChooser();
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			chooser.setFileFilter(new FileNameExtensionFilter("文本文件", "txt"));
-			chooser.showOpenDialog(HomePage.this);
+			chooser.setSelectedFile(new File(AppDir.instance().appPath, "tlbb1-2.txt"));
+			int result = chooser.showOpenDialog(HomePage.this);
+			if (JFileChooser.APPROVE_OPTION == result) {
+				Nav.getInstance().showSubpage(new LocalAnalysisPage(chooser.getSelectedFile()));
+			}
+
 		}
 
 	}
@@ -44,6 +52,7 @@ public class HomePage extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			Nav.getInstance().showSetting();
 		}
 
 	}
