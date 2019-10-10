@@ -21,7 +21,7 @@ public class BasePanel extends JPanel {
 
 	public void dismiss() {
 		exit = true;
-		Nav.getInstance().removeSubpage();
+		Nav.getInstance().subNavBack();
 	}
 
 	public boolean isExit() {

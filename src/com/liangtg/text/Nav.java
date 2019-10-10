@@ -19,6 +19,7 @@ public class Nav {
 
 	public Nav() {
 		subPage = new JPanel(new GridLayout(1, 1));
+		subPage.setOpaque(false);
 	}
 
 	public static Nav getInstance() {
@@ -39,7 +40,7 @@ public class Nav {
 		container.setLayout(cardLayout);
 		container.add(PAGE_HOME, new HomePage());
 		container.add(PAGE_SETTING, new SettingPage());
-		container.add("", new HomePage());
+		container.add(PAGE_SUBPAGE, subPage);
 		return this;
 	}
 
@@ -59,6 +60,11 @@ public class Nav {
 
 	public void removeSubpage() {
 		subPage.removeAll();
+	}
+
+	public void subNavBack() {
+		removeSubpage();
+		showHome();
 	}
 
 }
