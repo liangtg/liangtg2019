@@ -8,19 +8,28 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import com.liangtg.text.ui.ContentPanel;
+import com.liangtg.text.util.DbHelper;
 import com.liangtg.text.util.SettingUtil;
 
 public class Main {
+	private static MainFrame frame;
+	private static boolean run = true;
 
 	public static void main(String[] args) {
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		MainFrame frame = new MainFrame();
+		frame = new MainFrame();
 		String[] setScreen = SettingUtil.instance().getScreen().split("x");
 		int width = Integer.parseInt(setScreen[0]);
 		int height = Integer.parseInt(setScreen[1]);
 		frame.setSize(width, height);
 		frame.setLocation((screen.width - width) / 2, (screen.height - height) / 2);
 		frame.startShow();
+	}
+
+	public static void exit() {
+		run = false;
+		frame.dispose();
+		DbHelper.instance().close();
 	}
 
 	public static class MainFrame extends JFrame {
@@ -34,7 +43,7 @@ public class Main {
 			setUndecorated(true);
 			new Thread() {
 				public void run() {
-					while (true) {
+					while (run) {
 						try {
 							SwingUtilities.invokeAndWait(new Runnable() {
 								@Override
@@ -44,7 +53,6 @@ public class Main {
 							});
 							Thread.sleep(16);
 						} catch (Exception e) {
-							e.printStackTrace();
 						}
 					}
 				}

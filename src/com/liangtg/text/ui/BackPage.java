@@ -6,6 +6,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 @SuppressWarnings("serial")
 public class BackPage extends BasePanel {
@@ -57,6 +58,10 @@ public class BackPage extends BasePanel {
 		con.weightx = 1;
 		con.fill = GridBagConstraints.HORIZONTAL;
 		add(titleBar, con);
+	}
+
+	public void runOnUiThread(Runnable runnable) {
+		SwingUtilities.invokeLater(runnable);
 	}
 
 	protected void onBackPressed() {

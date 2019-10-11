@@ -4,13 +4,17 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.sql.SQLException;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import com.liangtg.text.Main;
 import com.liangtg.text.Nav;
 import com.liangtg.text.util.AppDir;
+import com.liangtg.text.util.DbHelper;
 
 public class HomePage extends BasePanel {
 	public HomePage() {
@@ -33,7 +37,14 @@ public class HomePage extends BasePanel {
 			chooser.setSelectedFile(new File(AppDir.instance().appPath, "tlbb1-2.txt"));
 			int result = chooser.showOpenDialog(HomePage.this);
 			if (JFileChooser.APPROVE_OPTION == result) {
-				Nav.getInstance().showSubpage(new LocalAnalysisPage(chooser.getSelectedFile()));
+				int id;
+				try {
+					id = DbHelper.instance().addLocal(chooser.getSelectedFile());
+					Nav.getInstance().showSubpage(new LocalAnalysisPage(id));
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(HomePage.this, "文件打开失败", null, JOptionPane.ERROR_MESSAGE);
+				}
 			}
 
 		}
@@ -77,7 +88,7 @@ public class HomePage extends BasePanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			System.exit(0);
+			Main.exit();
 		}
 
 	}

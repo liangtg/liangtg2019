@@ -23,6 +23,14 @@ public class AppDir {
 	 * 设置文件的位置
 	 */
 	public File setting;
+	/**
+	 * 设置文件的位置
+	 */
+	public File historyDB;
+	/**
+	 * 设置文件的位置
+	 */
+	public File historyDir;
 
 	private static AppDir ins = new AppDir();
 
@@ -38,10 +46,11 @@ public class AppDir {
 	private void init() {
 		this.appPath = new File(Main.class.getResource("/").getPath());
 		download = new File(appPath, "download");
-		if (!download.exists()) {
-			download.mkdir();
-		}
+		download.mkdirs();
 		setting = new File(appPath, "setting.prop");
+		historyDB = new File(appPath, "history.db");
+		historyDir = new File(appPath, "history");
+		historyDir.mkdirs();
 	}
 
 }

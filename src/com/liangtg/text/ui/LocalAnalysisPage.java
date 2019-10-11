@@ -1,96 +1,113 @@
 package com.liangtg.text.ui;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
+
+import javax.swing.Box;
+import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.border.EmptyBorder;
+
+import com.liangtg.text.util.DbHelper;
 
 public class LocalAnalysisPage extends BackPage {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3572413755951835372L;
 	private File file;
 	private HashMap<String, Integer> single = new HashMap<>(5000);
 	private HashMap<String, Integer> two = new HashMap<>(5000);
+	private int fid;
+	private JProgressBar progressBar;
 
-	public LocalAnalysisPage(File file) {
-		super(file.getAbsolutePath());
-		this.file = file;
+	public LocalAnalysisPage(int id) throws Exception {
+		super("");
+		fid = id;
+		try {
+			this.file = DbHelper.instance().findFile(id);
+		} catch (Exception e) {
+			dismiss();
+			throw e;
+		}
+		getTitleBar().setTitle(file.getAbsolutePath());
+		Box box = Box.createVerticalBox();
+		box.setBorder(new EmptyBorder(16, 16, 16, 16));
+		progressBar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 100);
+		box.add(progressBar);
+		setContent(box);
 		new AnalysisTask().start();
+	}
+
+	private void postProgress(int progress) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				progressBar.setValue(progress);
+			}
+		});
+	}
+
+	private void saveFail() {
+		JOptionPane.showMessageDialog(this, "文件保存失败");
+		dismiss();
 	}
 
 	private class AnalysisTask extends Thread {
 		@Override
 		public void run() {
 			try {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-				char[] buffer = new char[1024];
-				int p = reader.read(buffer);
-				StringBuilder sb = new StringBuilder(2);
-				while (p >= 0) {
-					for (int i = 0; i < p; i++) {
-						if (isNotSpecial(buffer[i])) {
-							sb.append(buffer[i]);
-							if (sb.length() == 2) {
-								updateSize(two, sb.toString());
-								sb.deleteCharAt(0);
-							}
-							updateSize(single, sb.toString());
-						} else if (sb.length() != 0) {
-							sb.deleteCharAt(0);
-						}
-
-					}
-					p = reader.read(buffer);
-				}
-				reader.close();
+				processFile();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			BufferedWriter bw = null;
+			postProgress(30);
 			try {
-				File write = new File("sql.txt");
-				bw = new BufferedWriter(new FileWriter(write));
-				bw.write("create table if not exists str(str text,num integer,len integer);\nbegin;\n");
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			System.out.println(single.size() + two.size());
-			for (Iterator<Entry<String, Integer>> iterator = single.entrySet().iterator(); iterator.hasNext();) {
-				Entry<String, Integer> type = (Entry<String, Integer>) iterator.next();
-				String line = String.format("INSERT INTO str(str,num,len) VALUES('%s',%d,1);", type.getKey(),
-						type.getValue());
-				try {
-					bw.write(line);
-					bw.write('\n');
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			for (Iterator<Entry<String, Integer>> iterator = two.entrySet().iterator(); iterator.hasNext();) {
-				Entry<String, Integer> type = (Entry<String, Integer>) iterator.next();
-				String line = String.format("INSERT INTO str(str,num,len) VALUES('%s',%d,2);", type.getKey(),
-						type.getValue());
-				try {
-					bw.write(line);
-					bw.write('\n');
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			try {
-				bw.write("commit;");
-				bw.flush();
-				bw.close();
-			} catch (IOException e) {
+				DbHelper.instance().saveHistory(fid, single, two);
+				postProgress(90);
+			} catch (Exception e) {
 				e.printStackTrace();
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						saveFail();
+					}
+				});
 			}
 
+		}
+
+		private void processFile() throws FileNotFoundException, IOException {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+			char[] buffer = new char[1024];
+			int p = reader.read(buffer);
+			StringBuilder sb = new StringBuilder(2);
+			while (p >= 0) {
+				process(buffer, p, sb);
+				p = reader.read(buffer);
+			}
+			reader.close();
+		}
+
+		private void process(char[] buffer, int p, StringBuilder sb) {
+			for (int i = 0; i < p; i++) {
+				if (isNotSpecial(buffer[i])) {
+					sb.append(buffer[i]);
+					if (sb.length() == 2) {
+						updateSize(two, sb.toString());
+						sb.deleteCharAt(0);
+					}
+					updateSize(single, sb.toString());
+				} else if (sb.length() != 0) {
+					sb.deleteCharAt(0);
+				}
+
+			}
 		}
 
 		private int[][] scope = { { 0, 0x2e7f }, { 0x3000, 0x303f }, { 0xFF00, 0xFFEF } };

@@ -31,6 +31,7 @@ public class TitleBar extends JPanel {
 	 */
 	private JButton backButton;
 	private OnClickListener listener;
+	private JLabel titleLabel;
 
 	public OnClickListener getListener() {
 		return listener;
@@ -56,15 +57,19 @@ public class TitleBar extends JPanel {
 
 	private void initTitle(String title) {
 		GridBagConstraints con;
-		JLabel label = new JLabel(title);
-		label.setFont(titleFont);
-		label.setForeground(Color.white);
-		label.setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 0));
+		titleLabel = new JLabel(title);
+		titleLabel.setFont(titleFont);
+		titleLabel.setForeground(Color.white);
+		titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 0));
 		con = new GridBagConstraints();
 		con.weighty = 1;
 		con.weightx = 1;
 		con.fill = GridBagConstraints.BOTH;
-		add(label, con);
+		add(titleLabel, con);
+	}
+
+	public void setTitle(String text) {
+		titleLabel.setText(text);
 	}
 
 	private void initBack() {
