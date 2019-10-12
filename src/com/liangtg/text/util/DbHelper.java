@@ -53,22 +53,25 @@ public class DbHelper {
 
 	}
 
-	public void saveHistory(int id, HashMap<String, Integer> first, HashMap<String, Integer> second) throws Exception {
+	public void saveHistory(int id, HashMap<String, Integer>... first) throws Exception {
 		File db = File.createTempFile("his", null, AppDir.instance().historyDir);
 		db.delete();
 		Connection connection = DriverManager.getConnection(JDBC_H2 + db.getAbsolutePath());
 		connection.setAutoCommit(false);
 		connection.prepareCall("create table if not exists str(str varchar,num integer,len integer);").execute();
 		PreparedStatement statement = connection.prepareStatement("INSERT INTO str(str,num,len) VALUES(?,?,?);");
-		addBatch(first, statement, 1);
-		addBatch(second, statement, 2);
-		statement.executeBatch();
+		for (int i = 0; i < first.length; i++) {
+			addBatch(first[i], statement, i + 1);
+			statement.executeBatch();
+			statement.clearBatch();
+		}
 		connection.commit();
 		connection.close();
 		CallableStatement call = historyConn.prepareCall("UPDATE history SET db_path = ? WHERE id = ?;");
 		call.setString(1, db.getAbsolutePath());
 		call.setInt(2, id);
 		call.execute();
+		historyConn.commit();
 	}
 
 	private void addBatch(HashMap<String, Integer> first, PreparedStatement statement, int len) throws SQLException {

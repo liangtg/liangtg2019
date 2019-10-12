@@ -55,6 +55,8 @@ public class HomePage extends BasePanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			String input = JOptionPane.showInputDialog(HomePage.this, "请输入地址",
+					"https://liangtg.github.io/liangtg2019/tlbb1-2.txt");
 		}
 
 	}
@@ -72,6 +74,7 @@ public class HomePage extends BasePanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			Nav.getInstance().showAbout();
 		}
 
 	}

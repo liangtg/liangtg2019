@@ -48,7 +48,9 @@ public class TitleBar extends JPanel {
 
 	public TitleBar(String title) {
 		super();
-		setPreferredSize(new Dimension(PREF_SIZE, PREF_SIZE));
+		Dimension size = new Dimension(PREF_SIZE, PREF_SIZE);
+		setPreferredSize(size);
+		setMinimumSize(size);
 		setBackground(new Color(0xFF, 0xFF, 0xFF, 0x80));
 		setLayout(new GridBagLayout());
 		initBack();

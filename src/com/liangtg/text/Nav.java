@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 
 import javax.swing.JPanel;
 
+import com.liangtg.text.ui.AboutPage;
 import com.liangtg.text.ui.HomePage;
 import com.liangtg.text.ui.SettingPage;
 
@@ -14,6 +15,7 @@ public class Nav {
 	private static final String PAGE_HOME = "home";
 	private static final String PAGE_SUBPAGE = "subpage";
 	private static final String PAGE_SETTING = "setting";
+	private static final String PAGE_ABOUT = "about";
 	private static Nav instance = new Nav();
 	private JPanel subPage;
 
@@ -40,6 +42,7 @@ public class Nav {
 		container.setLayout(cardLayout);
 		container.add(PAGE_HOME, new HomePage());
 		container.add(PAGE_SETTING, new SettingPage());
+		container.add(PAGE_ABOUT, new AboutPage());
 		container.add(PAGE_SUBPAGE, subPage);
 		return this;
 	}
@@ -50,6 +53,10 @@ public class Nav {
 
 	public void showSetting() {
 		cardLayout.show(container, PAGE_SETTING);
+	}
+
+	public void showAbout() {
+		cardLayout.show(container, PAGE_ABOUT);
 	}
 
 	public void showSubpage(Component comp) {

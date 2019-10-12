@@ -23,6 +23,8 @@ public class LocalAnalysisPage extends BackPage {
 	private File file;
 	private HashMap<String, Integer> single = new HashMap<>(5000);
 	private HashMap<String, Integer> two = new HashMap<>(5000);
+	private HashMap<String, Integer> three = new HashMap<>(5000);
+	private HashMap<String, Integer> four = new HashMap<>(5000);
 	private int fid;
 	private JProgressBar progressBar;
 
@@ -68,7 +70,7 @@ public class LocalAnalysisPage extends BackPage {
 			}
 			postProgress(30);
 			try {
-				DbHelper.instance().saveHistory(fid, single, two);
+				DbHelper.instance().saveHistory(fid, single, two, three, four);
 				postProgress(90);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -79,7 +81,7 @@ public class LocalAnalysisPage extends BackPage {
 					}
 				});
 			}
-
+			postProgress(100);
 		}
 
 		private void processFile() throws FileNotFoundException, IOException {
@@ -98,16 +100,20 @@ public class LocalAnalysisPage extends BackPage {
 			for (int i = 0; i < p; i++) {
 				if (isNotSpecial(buffer[i])) {
 					sb.append(buffer[i]);
-					if (sb.length() == 2) {
-						updateSize(two, sb.toString());
+					updateSize(single, String.valueOf(buffer[i]));
+					if (sb.length() > 1)
+						updateSize(two, sb.substring(sb.length() - 2));
+					if (sb.length() > 2)
+						updateSize(three, sb.substring(sb.length() - 3));
+					if (sb.length() > 3) {
+						updateSize(four, sb.substring(sb.length() - 4));
 						sb.deleteCharAt(0);
 					}
-					updateSize(single, sb.toString());
 				} else if (sb.length() != 0) {
-					sb.deleteCharAt(0);
+					sb.delete(0, sb.length());
 				}
-
 			}
+			System.out.printf("%d-%d-%d-%d\n", single.size(), two.size(), three.size(), four.size());
 		}
 
 		private int[][] scope = { { 0, 0x2e7f }, { 0x3000, 0x303f }, { 0xFF00, 0xFFEF } };
