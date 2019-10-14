@@ -16,14 +16,18 @@ public class Main {
 	private static boolean run = true;
 
 	public static void main(String[] args) {
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		frame = new MainFrame();
 		String[] setScreen = SettingUtil.instance().getScreen().split("x");
 		int width = Integer.parseInt(setScreen[0]);
 		int height = Integer.parseInt(setScreen[1]);
+		resize(width, height);
+		frame.startShow();
+	}
+
+	public static void resize(int width, int height) {
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		frame.setSize(width, height);
 		frame.setLocation((screen.width - width) / 2, (screen.height - height) / 2);
-		frame.startShow();
 	}
 
 	public static void exit() {
