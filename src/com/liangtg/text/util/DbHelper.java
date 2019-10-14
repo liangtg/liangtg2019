@@ -8,9 +8,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+
+import com.liangtg.text.db.*;
 
 public class DbHelper {
 	private static final String JDBC_H2 = "jdbc:h2:";
@@ -99,6 +102,26 @@ public class DbHelper {
 
 	public static DbHelper instance() {
 		return instance;
+	}
+
+	public ArrayList<HistoryItem> getHistoryList() {
+		ArrayList<HistoryItem> result = new ArrayList<HistoryItem>();
+		try {
+			ResultSet set = historyConn.prepareStatement("select * from history order by ts;").executeQuery();
+			while (set.next()) {
+				HistoryItem item = new HistoryItem();
+				item.id = set.getInt(1);
+				item.url = set.getString(2);
+				item.file = set.getString(3);
+				item.db = set.getString(4);
+				item.date = set.getLong(5);
+				result.add(item);
+			}
+			set.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 }

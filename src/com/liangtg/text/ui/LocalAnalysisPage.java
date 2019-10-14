@@ -113,7 +113,6 @@ public class LocalAnalysisPage extends BackPage {
 					sb.delete(0, sb.length());
 				}
 			}
-			System.out.printf("%d-%d-%d-%d\n", single.size(), two.size(), three.size(), four.size());
 		}
 
 		private int[][] scope = { { 0, 0x2e7f }, { 0x3000, 0x303f }, { 0xFF00, 0xFFEF } };
