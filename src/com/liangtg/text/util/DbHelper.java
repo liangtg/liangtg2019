@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import com.liangtg.text.db.*;
+import com.liangtg.text.db.HistoryDetail.DetailItem;
 
 public class DbHelper {
 	private static final String JDBC_H2 = "jdbc:h2:";
@@ -120,6 +121,38 @@ public class DbHelper {
 			set.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public HistoryDetail getHistoryDetail(int id) throws SQLException {
+		HistoryDetail detail = new HistoryDetail();
+		PreparedStatement statement = historyConn.prepareStatement("select db_path from history where id=?;");
+		statement.closeOnCompletion();
+		statement.setInt(1, id);
+		ResultSet set = statement.executeQuery();
+		if (set.first()) {
+			String db = set.getString(1);
+			Connection connection = DriverManager.getConnection(JDBC_H2 + db);
+			CallableStatement prepare = connection.prepareCall("select * from str where len=?;");
+			detail.single = loadHistoryDetail(prepare, 1);
+			detail.two = loadHistoryDetail(prepare, 2);
+			detail.three = loadHistoryDetail(prepare, 3);
+			detail.four = loadHistoryDetail(prepare, 4);
+			connection.close();
+		}
+		return detail;
+	}
+
+	private ArrayList<DetailItem> loadHistoryDetail(CallableStatement statement, int l) throws SQLException {
+		statement.setInt(1, l);
+		ResultSet set = statement.executeQuery();
+		ArrayList<HistoryDetail.DetailItem> result = new ArrayList<>();
+		while (set.next()) {
+			DetailItem item = new DetailItem();
+			item.text = set.getString(1);
+			item.count = set.getInt(2);
+			result.add(item);
 		}
 		return result;
 	}
