@@ -40,7 +40,20 @@ public class DbHelper {
 				Statement.RETURN_GENERATED_KEYS);
 		prepareCall.setString(1, file.getAbsolutePath());
 		prepareCall.setLong(2, System.currentTimeMillis());
-		return prepareCall.executeUpdate();
+		prepareCall.executeUpdate();
+		prepareCall.getGeneratedKeys().first();
+		return prepareCall.getGeneratedKeys().getInt(1);
+	}
+
+	public int addRemote(String url, File file) throws SQLException {
+		PreparedStatement prepareCall = historyConn.prepareStatement(
+				"INSERT INTO history(url,file_path,ts) VALUES(?,?,?);", Statement.RETURN_GENERATED_KEYS);
+		prepareCall.setString(1, url);
+		prepareCall.setString(2, file.getAbsolutePath());
+		prepareCall.setLong(3, System.currentTimeMillis());
+		prepareCall.executeUpdate();
+		prepareCall.getGeneratedKeys().first();
+		return prepareCall.getGeneratedKeys().getInt(1);
 	}
 
 	public File findFile(int id) throws SQLException {
@@ -108,7 +121,9 @@ public class DbHelper {
 	public ArrayList<HistoryItem> getHistoryList() {
 		ArrayList<HistoryItem> result = new ArrayList<HistoryItem>();
 		try {
-			ResultSet set = historyConn.prepareStatement("select * from history order by ts;").executeQuery();
+			ResultSet set = historyConn
+					.prepareStatement("select * from history where db_path is not null order by ts desc;")
+					.executeQuery();
 			while (set.next()) {
 				HistoryItem item = new HistoryItem();
 				item.id = set.getInt(1);
@@ -125,7 +140,7 @@ public class DbHelper {
 		return result;
 	}
 
-	public HistoryDetail getHistoryDetail(int id) throws SQLException {
+	public HistoryDetail getHistoryDetail(int id) throws Exception {
 		HistoryDetail detail = new HistoryDetail();
 		PreparedStatement statement = historyConn.prepareStatement("select db_path from history where id=?;");
 		statement.closeOnCompletion();
@@ -134,7 +149,8 @@ public class DbHelper {
 		if (set.first()) {
 			String db = set.getString(1);
 			Connection connection = DriverManager.getConnection(JDBC_H2 + db);
-			CallableStatement prepare = connection.prepareCall("select * from str where len=?;");
+			CallableStatement prepare = connection
+					.prepareCall("select * from str where len=? order by num desc limit 100;");
 			detail.single = loadHistoryDetail(prepare, 1);
 			detail.two = loadHistoryDetail(prepare, 2);
 			detail.three = loadHistoryDetail(prepare, 3);

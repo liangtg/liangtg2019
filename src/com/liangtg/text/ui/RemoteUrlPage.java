@@ -3,6 +3,7 @@ package com.liangtg.text.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -13,6 +14,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,6 +26,7 @@ import java.net.URLConnection;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
@@ -31,7 +34,9 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
+import com.liangtg.text.Nav;
 import com.liangtg.text.util.AppDir;
+import com.liangtg.text.util.DbHelper;
 
 public class RemoteUrlPage extends BackPage {
 
@@ -45,6 +50,7 @@ public class RemoteUrlPage extends BackPage {
 		}
 	};
 	private JLabel errorLabel;
+	private JProgressBar progressBar;
 
 	public RemoteUrlPage() {
 		super("下载");
@@ -77,7 +83,8 @@ public class RemoteUrlPage extends BackPage {
 		con = new GridBagConstraints();
 		con.gridwidth = 2;
 		con.fill = GridBagConstraints.BOTH;
-		content.add(new JProgressBar(JProgressBar.HORIZONTAL, 0, 100), con);
+		progressBar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 100);
+		content.add(progressBar, con);
 		newLine(content);
 
 		con = new GridBagConstraints();
@@ -86,6 +93,13 @@ public class RemoteUrlPage extends BackPage {
 		content.add(Box.createVerticalStrut(8), con);
 
 		setContent(content);
+	}
+
+	private void newLine(JPanel panel) {
+		GridBagConstraints con = new GridBagConstraints();
+		con.gridwidth = GridBagConstraints.REMAINDER;
+		con.gridx = 0;
+		panel.add(Box.createVerticalStrut(8), con);
 	}
 
 	private void showError(String text) {
@@ -105,11 +119,35 @@ public class RemoteUrlPage extends BackPage {
 		URL url;
 		try {
 			url = new URL(text);
+			new DownTask(url).start();
 		} catch (MalformedURLException e) {
 			showError("地址输入错误");
 			return;
 		}
 		download.setEnabled(false);
+	}
+
+	private void postProgress(int progress) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				progressBar.setValue(progress);
+			}
+		});
+	}
+
+	private void onSuccess(int id) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Nav.getInstance().showSubpage(new LocalAnalysisPage(id));
+				} catch (Exception e) {
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(RemoteUrlPage.this, "文件打开失败");
+				}
+			}
+		});
 	}
 
 	private class DownTask extends Thread {
@@ -125,39 +163,33 @@ public class RemoteUrlPage extends BackPage {
 			HttpURLConnection con;
 			try {
 				con = (HttpURLConnection) url.openConnection();
-				con.setConnectTimeout(10);
+				con.setConnectTimeout(10000);
+				con.setReadTimeout(10000);
 				if (con.getResponseCode() == 200) {
 					File target = File.createTempFile("down", null, AppDir.instance().download);
-//					BufferedOutputStream bo = new BufferedOutputStream(new FileWriter(target));
+					BufferedOutputStream bo = new BufferedOutputStream(new FileOutputStream(target));
+					byte[] buffer = new byte[1024];
+					int all = con.getContentLength();
+					int len = con.getInputStream().read(buffer);
+					int read = 0;
+					while (len >= 0) {
+						read += len;
+						bo.write(buffer, 0, len);
+						len = con.getInputStream().read(buffer);
+						postProgress(Math.min(100, read * 100 / all));
+					}
+					bo.flush();
+					bo.close();
+					int id = DbHelper.instance().addRemote(url.toString(), target);
+					onSuccess(id);
+				} else {
+					showError("下载失败: " + con.getResponseCode());
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
+				showError("下载失败: " + e.getMessage());
 			}
 		}
-	}
-
-	private void extracted(JPanel content) {
-		GridBagConstraints con;
-		content.add(new JLabel("1"));
-		JPanel b1 = new JPanel(new GridLayout(1, 1));
-		con = new GridBagConstraints();
-		con.weightx = 1;
-		b1.add(new JLabel("11111111111111111111"));
-		content.add(b1, con);
-		b1 = new JPanel(new GridLayout(1, 1));
-		con = new GridBagConstraints();
-		con.weightx = 1;
-		b1.add(new JLabel("11111111111111111111"));
-		content.add(b1, con);
-		content.add(new JButton("删除"));
-		newLine(content);
-	}
-
-	private void newLine(JPanel panel) {
-		GridBagConstraints con = new GridBagConstraints();
-		con.gridwidth = GridBagConstraints.REMAINDER;
-		con.gridx = 0;
-		panel.add(Box.createVerticalStrut(8), con);
 	}
 
 }

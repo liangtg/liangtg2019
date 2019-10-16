@@ -22,7 +22,8 @@ public class Nav {
 	private static final String PAGE_REMOTE = "remote";
 	private static Nav instance = new Nav();
 	private JPanel subPage;
-	private String lastPage = PAGE_HOME;
+	private String curPage = PAGE_HOME;
+	private String lastPage = null;
 
 	public Nav() {
 		subLayout = new CardLayout();
@@ -58,43 +59,46 @@ public class Nav {
 
 	public void showHome() {
 		cardLayout.first(container);
+		curPage = PAGE_HOME;
 	}
 
 	public void showSetting() {
 		cardLayout.show(container, PAGE_SETTING);
-		lastPage = PAGE_SETTING;
+		curPage = PAGE_SETTING;
 	}
 
 	public void showAbout() {
 		cardLayout.show(container, PAGE_ABOUT);
-		lastPage = PAGE_ABOUT;
+		curPage = PAGE_ABOUT;
 	}
 
 	public void showHistory() {
 		cardLayout.show(container, PAGE_HISTORY);
-		lastPage = PAGE_HISTORY;
+		curPage = PAGE_HISTORY;
 	}
 
 	public void showRemote() {
 		cardLayout.show(container, PAGE_REMOTE);
-		lastPage = PAGE_REMOTE;
+		curPage = PAGE_REMOTE;
 	}
 
 	public void showSubpage(Component comp) {
+		if (null == lastPage) {
+			lastPage = curPage;
+		}
 		subPage.add(comp);
 		cardLayout.show(container, PAGE_SUBPAGE);
 		subLayout.last(subPage);
 	}
 
 	public void subNavBack() {
-		if (!subPage.isVisible()) {
-			showHome();
-		} else if (subPage.getComponentCount() > 1) {
+		if (subPage.getComponentCount() > 1) {
 			subPage.remove(subPage.getComponentCount() - 1);
 			subLayout.last(subPage);
 		} else {
 			subPage.removeAll();
-			cardLayout.show(container, lastPage);
+			cardLayout.show(container, lastPage == null ? PAGE_HOME : lastPage);
+			lastPage = null;
 		}
 	}
 

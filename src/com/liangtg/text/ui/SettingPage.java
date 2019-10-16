@@ -1,5 +1,6 @@
 package com.liangtg.text.ui;
 
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -7,6 +8,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 
+import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -17,18 +19,29 @@ import com.liangtg.text.util.AppDir;
 import com.liangtg.text.util.SettingUtil;
 
 public class SettingPage extends BackPage {
+	private Font font = new Font(null, Font.PLAIN, 20);
 
 	public SettingPage() {
 		super("设置");
 		JPanel content = new JPanel(new GridBagLayout());
-		content.add(new JLabel("保存位置:\t"));
-		content.add(new JLabel(AppDir.instance().setting.getAbsolutePath()));
+		JLabel label = new JLabel("保存位置:\t");
+		label.setFont(font);
+		content.add(label);
+		JLabel path = new JLabel(AppDir.instance().setting.getAbsolutePath());
+		path.setFont(font);
+		content.add(path);
+		newLine(content);
+
 		GridBagConstraints con = new GridBagConstraints();
 		con.gridx = 0;
 		con.gridy = 1;
-		content.add(new JLabel("分辨率: "), con);
+		JLabel fenbian = new JLabel("分辨率: ");
+		fenbian.setFont(font);
+		content.add(fenbian, con);
+
 		SettingUtil.instance();
 		JComboBox<String> screen = new JComboBox<String>(SettingUtil.SCREEN_LIST);
+		screen.setFont(font);
 		String select = SettingUtil.instance().getScreen();
 		for (int i = 0; i < SettingUtil.SCREEN_LIST.length; i++) {
 			if (select.equals(SettingUtil.SCREEN_LIST[i])) {
@@ -57,7 +70,20 @@ public class SettingPage extends BackPage {
 		con.gridx = 1;
 		con.gridy = 1;
 		content.add(screen, con);
+		newLine(content);
+
+		con = new GridBagConstraints();
+		con.weighty = 1;
+		con.gridwidth = 2;
+		content.add(Box.createVerticalStrut(8), con);
+
 		setContent(content);
 	}
 
+	private void newLine(JPanel panel) {
+		GridBagConstraints con = new GridBagConstraints();
+		con.gridwidth = GridBagConstraints.REMAINDER;
+		con.gridx = 0;
+		panel.add(Box.createVerticalStrut(8), con);
+	}
 }

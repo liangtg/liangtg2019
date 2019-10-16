@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.border.EmptyBorder;
 
+import com.liangtg.text.Nav;
 import com.liangtg.text.util.DbHelper;
 
 public class LocalAnalysisPage extends BackPage {
@@ -72,6 +73,7 @@ public class LocalAnalysisPage extends BackPage {
 			try {
 				DbHelper.instance().saveHistory(fid, single, two, three, four);
 				postProgress(90);
+				showDetail();
 			} catch (Exception e) {
 				e.printStackTrace();
 				runOnUiThread(new Runnable() {
@@ -82,6 +84,16 @@ public class LocalAnalysisPage extends BackPage {
 				});
 			}
 			postProgress(100);
+		}
+
+		private void showDetail() {
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					dismiss();
+					Nav.getInstance().showSubpage(new AnalysisDetailPage(fid));
+				}
+			});
 		}
 
 		private void processFile() throws FileNotFoundException, IOException {
